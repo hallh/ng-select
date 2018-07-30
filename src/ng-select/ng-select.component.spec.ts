@@ -223,7 +223,7 @@ describe('NgSelectComponent', function () {
         it('should set items correctly if there is no bindLabel', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select 
+                `<ng-select
                     [items]="cities"
                     [clearable]="true"
                     [(ngModel)]="selectedCity">
@@ -531,7 +531,7 @@ describe('NgSelectComponent', function () {
                             placeholder="select value"
                             [(ngModel)]="selectedCityId">
                         </ng-select>`);
-                    
+
                     fixture.componentInstance.selectedCityId = 2;
                     tickAndDetectChanges(fixture);
                     const result = [jasmine.objectContaining({
@@ -551,7 +551,7 @@ describe('NgSelectComponent', function () {
                             placeholder="select value"
                             [(ngModel)]="selectedCityId">
                         </ng-select>`);
-                    
+
                     fixture.componentInstance.selectedCityId = 2;
                     tickAndDetectChanges(fixture);
                     tickAndDetectChanges(fixture);
@@ -619,7 +619,7 @@ describe('NgSelectComponent', function () {
                             placeholder="select value"
                             [(ngModel)]="selectedCity">
                         </ng-select>`);
-                    
+
                     fixture.componentInstance.selectedCity = fixture.componentInstance.cities[1];
                     tickAndDetectChanges(fixture);
                     const result = [jasmine.objectContaining({
@@ -1248,10 +1248,10 @@ describe('NgSelectComponent', function () {
         it('should display custom loading and no data found template', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities" 
+                `<ng-select [items]="cities"
                             [loading]="citiesLoading"
                             [(ngModel)]="selectedCity">
-                    
+
                     <ng-template ng-notfound-tmp let-searchTerm="searchTerm">
                         <div class="custom-notfound">
                             No data found for "{{searchTerm}}"
@@ -1286,15 +1286,15 @@ describe('NgSelectComponent', function () {
         it('should display custom type for search template', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities" 
-                            [typeahead]="filter" 
+                `<ng-select [items]="cities"
+                            [typeahead]="filter"
                             [(ngModel)]="selectedCity">
                     <ng-template ng-typetosearch-tmp>
                         <div class="custom-typeforsearch">
                             Start typing...
                         </div>
                     </ng-template>
-                   
+
                 </ng-select>`);
 
             fixture.whenStable().then(() => {
@@ -1481,7 +1481,7 @@ describe('NgSelectComponent', function () {
             it('should skip selected items while filtering', fakeAsync(() => {
                 fixture.componentInstance.selectedCities = [fixture.componentInstance.cities[0]];
                 tickAndDetectChanges(fixture);
-                select.filter('s');
+                select.filter('k');
                 tickAndDetectChanges(fixture);
                 expect(select.itemsList.filteredItems.length).toBe(1);
                 expect(select.itemsList.filteredItems[0].label).toBe('Kaunas');
