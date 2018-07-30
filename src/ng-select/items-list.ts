@@ -128,7 +128,7 @@ export class ItemsList {
                 if (this._ngSelect.hideSelected && this._selected.indexOf(item) > -1) {
                     continue;
                 }
-                if (label.indexOf(term) > -1) {
+                if (label.indexOf(term) === 0) {
                     matchedItems.push(item);
                 }
             }
