@@ -1,4 +1,4 @@
-<div (click)="searchable ? open() : toggle()" [class.ng-has-value]="hasValue" class="ng-control">
+<div (mousedown)="handleMousedown($event)" [class.ng-has-value]="hasValue" class="ng-control">
     <div class="ng-value-container">
         <div class="ng-placeholder">{{placeholder}}</div>
 
@@ -8,7 +8,7 @@
                     <span class="ng-value-icon left" (click)="unselect(item); $event.stopPropagation()" aria-hidden="true">×</span>
                     <span class="ng-value-label" [innerHTML]="item.label"></span>
                 </ng-template>
-    
+
                 <ng-template
                     [ngTemplateOutlet]="labelTemplate || defaultLabelTemplate"
                     [ngTemplateOutletContext]="{ item: item.value, clear: clearItem, label: item.label }">
@@ -37,17 +37,13 @@
 
     <div class="ng-spinner-loader" *ngIf="isLoading"></div>
 
-    <span *ngIf="showClear()" (click)="handleClearClick($event)" class="ng-clear-zone" title="{{clearAllText}}">
+    <span *ngIf="showClear()" class="ng-clear-zone" title="{{clearAllText}}">
         <span class="ng-clear" aria-hidden="true">×</span>
     </span>
 
-    <span (click)="handleArrowClick($event)" class="ng-arrow-zone">
+    <span class="ng-arrow-zone">
         <span class="ng-arrow"></span>
     </span>
-</div>
-
-<div class="ng-overlay-container" *ngIf="isOpen">
-    <div class="ng-overlay" (click)="close()" ></div>
 </div>
 
 <ng-dropdown-panel *ngIf="isOpen"
@@ -62,8 +58,9 @@
     (update)="viewPortItems = $event"
     (positionChange)="currentDropdownPosition = $event"
     (scrollToEnd)="scrollToEnd.emit($event)"
+    (outsideClick)="close()"
     [ngClass]="{'multiple': multiple}">
-    
+
     <ng-container>
         <div class="ng-option" role="option" (click)="toggleItem(item)" (mousedown)="$event.preventDefault()" (mouseover)="onItemHover(item)"
                 *ngFor="let item of viewPortItems"
@@ -97,7 +94,7 @@
         <ng-template #defaultNotfoundTemplate>
             <div class="ng-option disabled" [innerHTML]="notFoundText" *ngIf="showNoItemsFound()"></div>
         </ng-template>
-    
+
         <ng-template
             [ngTemplateOutlet]="notFoundTemplate || defaultNotfoundTemplate"
             [ngTemplateOutletContext]="{ searchTerm: filterValue }">
@@ -108,17 +105,17 @@
         <ng-template #defaultTypeToSearchTemplate>
             <div class="ng-option disabled" [innerHTML]="typeToSearchText"></div>
         </ng-template>
-    
+
         <ng-template
             [ngTemplateOutlet]="typeToSearchTemplate || defaultTypeToSearchTemplate">
         </ng-template>
     </ng-container>
-   
+
     <ng-container *ngIf="isLoading && itemsList.filteredItems.length === 0">
         <ng-template #defaultLoadingTextTemplate>
             <div class="ng-option disabled" [innerHTML]="loadingText"></div>
         </ng-template>
-    
+
         <ng-template
             [ngTemplateOutlet]="loadingTextTemplate || defaultLoadingTextTemplate"
             [ngTemplateOutletContext]="{ searchTerm: filterValue  }">

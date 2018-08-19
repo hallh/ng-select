@@ -59,6 +59,7 @@ export class NgDropdownPanelComponent implements OnDestroy {
     @Output() update = new EventEmitter<any[]>();
     @Output() scrollToEnd = new EventEmitter<{ start: number; end: number }>();
     @Output() positionChange = new EventEmitter();
+    @Output() outsideClick = new EventEmitter<void>();
 
     @ViewChild('content', { read: ElementRef }) contentElementRef: ElementRef;
     @ViewChild('scroll', { read: ElementRef }) scrollElementRef: ElementRef;
@@ -66,7 +67,7 @@ export class NgDropdownPanelComponent implements OnDestroy {
 
     currentPosition: DropdownPosition = 'bottom';
 
-    private _selectElementRef: ElementRef;
+    private _selectElement: HTMLElement;
     private _previousStart: number;
     private _previousEnd: number;
     private _startupLoop = true;
@@ -75,6 +76,7 @@ export class NgDropdownPanelComponent implements OnDestroy {
     private _itemsList: ItemsList;
     private _disposeScrollListener = () => { };
     private _disposeDocumentResizeListener = () => { };
+    private _disposeDocumentClickListener = () => { };
 
     constructor(
         @Inject(forwardRef(() => NgSelectComponent)) _ngSelect: NgSelectComponent,
@@ -84,7 +86,7 @@ export class NgDropdownPanelComponent implements OnDestroy {
         private _virtualScrollService: VirtualScrollService,
         private _window: WindowService
     ) {
-        this._selectElementRef = _ngSelect.elementRef;
+        this._selectElement = _ngSelect.elementRef.nativeElement;
         this._itemsList = _ngSelect.itemsList;
     }
 
@@ -93,6 +95,8 @@ export class NgDropdownPanelComponent implements OnDestroy {
         if (this.appendTo) {
             this._handleAppendTo();
         }
+
+        this._handleDocumentClick();
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -117,6 +121,7 @@ export class NgDropdownPanelComponent implements OnDestroy {
         if (this.appendTo) {
             this._renderer.removeChild(this._elementRef.nativeElement.parentNode, this._elementRef.nativeElement);
         }
+        this._disposeDocumentClickListener();
     }
 
     refresh() {
@@ -133,7 +138,7 @@ export class NgDropdownPanelComponent implements OnDestroy {
         if (index < 0 || index >= this.items.length) {
             return;
         }
-        
+
         const d = this._calculateDimensions(this.virtualScroll ? 0 : index);
         const scrollEl: Element = this.scrollElementRef.nativeElement;
         const buffer = Math.floor(d.viewHeight / d.childHeight) - 1;
@@ -150,6 +155,19 @@ export class NgDropdownPanelComponent implements OnDestroy {
         const el: Element = this.scrollElementRef.nativeElement;
         const d = this._calculateDimensions();
         el.scrollTop = d.childHeight * (d.itemsLength + 1);
+    }
+
+    private _handleDocumentClick() {
+        this._disposeDocumentClickListener = this._renderer.listen('document', 'mousedown', ($event: any) => {
+            if (this._selectElement.contains($event.target)) {
+                return;
+            }
+             const dropdown: HTMLElement = this._elementRef.nativeElement;
+            if (dropdown.contains($event.target)) {
+                return;
+            }
+             this.outsideClick.emit();
+        });
     }
 
     private _handleScroll() {
@@ -266,7 +284,7 @@ export class NgDropdownPanelComponent implements OnDestroy {
 
     private _updateDropdownPosition() {
         const parent = document.querySelector(this.appendTo) || document.body;
-        const selectRect: ClientRect = this._selectElementRef.nativeElement.getBoundingClientRect();
+        const selectRect: ClientRect = this._selectElement.getBoundingClientRect();
         const dropdownPanel: HTMLElement = this._elementRef.nativeElement;
         const boundingRect = parent.getBoundingClientRect();
         const offsetTop = selectRect.top - boundingRect.top;
@@ -285,7 +303,7 @@ export class NgDropdownPanelComponent implements OnDestroy {
             return;
         }
 
-        const selectRect: ClientRect = this._selectElementRef.nativeElement.getBoundingClientRect();
+        const selectRect: ClientRect = this._selectElement.getBoundingClientRect();
         const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
         const offsetTop = selectRect.top + window.pageYOffset;
         const height = selectRect.height;

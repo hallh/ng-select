@@ -25,6 +25,7 @@ import {
     ContentChildren,
     QueryList,
     InjectionToken,
+    NgZone,
 } from '@angular/core';
 
 import {
@@ -45,6 +46,7 @@ import { NgOptionComponent } from './ng-option.component';
 import { NgDropdownPanelComponent } from './ng-dropdown-panel.component';
 import { isDefined, isFunction, isPromise, isObject } from './value-utils';
 import { ConsoleService } from './console.service';
+import { WindowService } from './window.service';
 
 export const NG_SELECT_DEFAULT_CONFIG = new InjectionToken<NgSelectConfig>('ng-select-default-options');
 export type DropdownPosition = 'bottom' | 'top' | 'auto';
@@ -152,6 +154,8 @@ export class NgSelectComponent implements OnDestroy, OnChanges, AfterViewInit, C
     constructor(@Inject(NG_SELECT_DEFAULT_CONFIG) config: NgSelectConfig,
         private _cd: ChangeDetectorRef,
         private _console: ConsoleService,
+        private _zone: NgZone,
+        private _window: WindowService,
         public elementRef: ElementRef
     ) {
         this._mergeGlobalConfig(config);
@@ -225,8 +229,23 @@ export class NgSelectComponent implements OnDestroy, OnChanges, AfterViewInit, C
         }
     }
 
-    handleArrowClick($event: Event) {
-        $event.stopPropagation();
+    handleMousedown($event) {
+        if ($event.target.className === 'ng-clear') {
+            this.handleClearClick();
+            return;
+        }
+        if ($event.target.className === 'ng-arrow') {
+            this.handleArrowClick();
+            return;
+        }
+        if (this.searchable) {
+            this.open();
+        } else {
+            this.toggle();
+        }
+    }
+
+    handleArrowClick() {
         if (this.isOpen) {
             this.close();
         } else {
@@ -234,8 +253,7 @@ export class NgSelectComponent implements OnDestroy, OnChanges, AfterViewInit, C
         }
     }
 
-    handleClearClick($event: Event) {
-        $event.stopPropagation();
+    handleClearClick() {
         if (this.hasValue) {
             this.clearModel();
         }
@@ -303,7 +321,7 @@ export class NgSelectComponent implements OnDestroy, OnChanges, AfterViewInit, C
         this._clearSearch();
         this._onTouched();
         this.closeEvent.emit();
-        this.detectChanges();
+        this._cd.markForCheck();
     }
 
     toggleItem(item: NgOption) {
@@ -423,8 +441,16 @@ export class NgSelectComponent implements OnDestroy, OnChanges, AfterViewInit, C
     }
 
     focusSearchInput() {
-        this.filterInput.nativeElement.focus();
-        this.filterInput.nativeElement.select();
+        if (!this.filterInput) {
+          return;
+        }
+
+        this._zone.runOutsideAngular(() => {
+            this._window.setTimeout(() => {
+                this.filterInput.nativeElement.focus();
+                this.filterInput.nativeElement.select();
+            }, 0);
+        });
     }
 
     private _setItems(items: any[]) {
@@ -538,7 +564,7 @@ export class NgSelectComponent implements OnDestroy, OnChanges, AfterViewInit, C
         }
     }
 
-    
+
 
     private _updateNgModel() {
         const model = [];
