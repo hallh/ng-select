@@ -28,8 +28,8 @@
                    [readOnly]="!searchable"
                    [value]="filterValue"
                    (input)="filter(filterInput.value)"
-                   (focus)="onInputFocus()"
-                   (blur)="onInputBlur()"
+                   (focus)="onInputFocus($event)"
+                   (blur)="onInputBlur($event)"
                    (change)="$event.stopPropagation()"
                    role="combobox">
         </div>
